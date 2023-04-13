@@ -1,0 +1,7 @@
+.force-graph-container,
+.scene-container {
+    position: absolute !important;
+    top: 0;
+    left: $widthDock + $widthList;
+    right: 0;
+}
