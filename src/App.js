@@ -6,6 +6,12 @@ import Dock from './components/Dock';
 import List from './components/List';
 import Info from './components/Info';
 import Graph from './components/Graph';
+import CaseUpload from './components/Upload';
+
+import {
+  createBrowserRouter,
+  RouterProvider,
+} from "react-router-dom";
 
 function App() {
 
@@ -19,15 +25,35 @@ function App() {
     ]
   };
 
+  const router = createBrowserRouter([
+    {
+      path: "/case/:id",
+      element: (
+        <div className="App">
+          <header className="App-header">
+            <Dock />
+            <Graph setVertex={setVertex} />
+            <List items={myData.nodes} />
+            <Info vertex={vertex}/>
+          </header>
+        </div>
+      ),
+    },
+    {
+      path: "/",
+      element: (
+        <div className="App">
+          <header className="App-header">
+            <Dock />
+            <CaseUpload />
+          </header>
+        </div>
+      ),
+    }
+  ]);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <Dock />
-        <Graph setVertex={setVertex} />
-        <List items={myData.nodes} />
-        <Info vertex={vertex}/>
-      </header>
-    </div>
+    <RouterProvider router={router}></RouterProvider>
   );
 }
 
