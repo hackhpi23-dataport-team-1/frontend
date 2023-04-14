@@ -15,14 +15,16 @@ const Graph = ({setVertex}) => {
     const fgRef = useRef();
 
     const parseGraph = (response) => {
-        console.log(response.data);
+        console.log(response);
+        const json = JSON.parse(response.data);
+        console.log(json);
 
         const graph = {
-                nodes: response.data.vertices,
-                links: response.data.edges
-            };
+            nodes: json.graph.vertices,
+            links: json.graph.edges
+        };
 
-            console.log(graph);
+        console.log(graph);
 
             // cross-link node objects
             graph.links.forEach(link => {
