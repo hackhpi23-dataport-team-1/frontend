@@ -2,7 +2,20 @@ import React from 'react';
 import ForceGraph2D from 'react-force-graph-2d';
 import axios from 'axios';
 import { useEffect, useState, useCallback, useRef } from 'react';
-import SpriteText from 'three-spritetext';
+import GridLoader from "react-spinners/GridLoader";
+
+const mapping = {
+    'ip': 'ip',
+    'asn': 'asn',
+    'domain': 'name',
+    'has_asn': 'asn',
+    "process": "process",
+    "Dummy" : "Dummy",
+    "file" : "file",
+    "dns" : "dns",
+    'NetworkConnect': 'process',
+    'create': 'level',
+};
 
 const Graph = ({setVertex}) => {
     const [graphData, setGraphData] = useState({nodes: [], links: []});
@@ -15,42 +28,67 @@ const Graph = ({setVertex}) => {
     const fgRef = useRef();
 
     const parseGraph = (response) => {
+        console.log("Fetched graph data!");
+
         console.log(response);
-        const json = JSON.parse(response.data);
-        console.log(json);
+
+        const links = response.data.edges.map((edge) => {
+            const new_edge = {...edge};
+            
+            if (typeof edge.source !== 'string') {
+                new_edge.source = edge.source.id;
+            }
+
+            if (typeof edge.target !== 'string') {
+                new_edge.target = edge.target.id;
+            }
+
+            return new_edge;
+        })
+
+        console.log(links);
 
         const graph = {
-            nodes: json.graph.vertices,
-            links: json.graph.edges
+            nodes: response.data.vertices,
+            links: links,
         };
+
+        console.log(graph.links);
+
+        // cross-link node objects
+        graph.links.forEach(link => {
+            const a = graph.nodes.find((node) => node.id === link.source);
+            if (!a) return;
+
+            const b = graph.nodes.find((node) => node.id === link.target);
+            if (!b) return;
+            
+            !a.neighbors && (a.neighbors = []);
+            !b.neighbors && (b.neighbors = []);
+            a.neighbors.push(b.id);
+            b.neighbors.push(a.id);
+
+            !a.links && (a.links = []);
+            !b.links && (b.links = []);
+            a.links.push(link);
+            b.links.push(link);
+        });
 
         console.log(graph);
 
-            // cross-link node objects
-            graph.links.forEach(link => {
-                const a = graph.nodes.find((node) => node.id === link.from);
-                const b = graph.nodes.find((node) => node.id === link.to);
-                !a.neighbors && (a.neighbors = []);
-                !b.neighbors && (b.neighbors = []);
-                a.neighbors.push(b.id);
-                b.neighbors.push(a.id);
-
-                !a.links && (a.links = []);
-                !b.links && (b.links = []);
-                a.links.push(link);
-                b.links.push(link);
-            });
-
-            console.log(graph);
-
-            setGraphData(graph);
-            setLoading(false);
+        setGraphData(graph);
+        setLoading(false);
     }
 
     useEffect(() => {
         setLoading(true);
+        console.log("Fetching graph data...");
         axios.get(`http://127.0.0.1:5000/case/${caseId}`).then(parseGraph);
     }, []);
+
+    const getLabel = (node) => {
+        return node.attr[mapping[node.kind]] || node.id;
+    }
 
     const nodePaint = useCallback((node, color, ctx) => {
         const radius = node.score / 100 * 5;
@@ -82,7 +120,8 @@ const Graph = ({setVertex}) => {
         ctx.fillText(type, node.x, node.y - node.score / 100 * 8 - 4);
 
         ctx.font = `${fontSize}px Sans-Serif`;
-        ctx.fillText(node.id, node.x, node.y - node.score / 100 * 8 - 1.5);
+        const label = getLabel(node)
+        ctx.fillText(label, node.x, node.y - node.score / 100 * 8 - 1.5);
 
     }, [hoverNode, highlightNodes]);
 
@@ -142,12 +181,13 @@ const Graph = ({setVertex}) => {
         const highlightedNodes = new Set();
         const highlightedLinks = new Set();
 
-        if (node) {
+        if (node && node.neighbors && node.neighbors.length > 0) {
             highlightedNodes.add(node.id);
             node.neighbors.forEach(neighbor => highlightedNodes.add(neighbor));
+
             node.links.forEach(link => highlightedLinks.add({
-                from: link.from,
-                to: link.to
+                source: link.source,
+                target: link.target
             }));
         }
 
@@ -212,18 +252,15 @@ const Graph = ({setVertex}) => {
         ctx.restore();
     }
 
-    useEffect(() => {
-        console.log(highlightLinks);
-    }, [highlightLinks]);
-
     const findLink = (link) => {
-        return Array.from(highlightLinks.values()).find((l) => l.from === link.from && l.to === link.to);
+        if (highlightLinks.size === 0) return false;
+        return Array.from(highlightLinks.values()).find((l) => l.source === link.source && l.target === link.target);
     }
 
     if (loading) {
         return (
             <div className="loading">
-                <h1>Extracting valuable information...</h1>
+                <GridLoader color="#5057B0" />
             </div>
         )
     }
@@ -232,8 +269,8 @@ const Graph = ({setVertex}) => {
         <ForceGraph2D 
             ref={fgRef}
             graphData={graphData} 
-            linkSource='from'
-            linkTarget='to'
+            linkSource='source'
+            linkTarget='target'
             autoPauseRedraw={false}
             width={graphWidth}
             height={window.innerHeight - 40}
