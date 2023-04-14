@@ -7,16 +7,10 @@ const Dock = ({vertex}) => {
         console.log(vertex);
         if (!vertex) return;
 
-        delete vertex.__indexColor;
-        delete vertex.index;
-        delete vertex.x;
-        delete vertex.y;
-        delete vertex.vx;
-        delete vertex.vy;
-        delete vertex.neighbors;
-        delete vertex.links;
+        const info = vertex.attr;
+        info.score = vertex.score;
 
-        setSelectedVertex(JSON.stringify(vertex, null, 4));
+        setSelectedVertex(JSON.stringify(info, null, 4));
     }, [vertex]);
 
     if (!vertex) return (
