@@ -33,7 +33,7 @@ function App() {
           <header className="App-header">
             <Dock />
             <Graph setVertex={setVertex} />
-            <List items={myData.nodes} />
+            {/*<List items={myData.nodes} />*/}
             <Info vertex={vertex}/>
           </header>
         </div>

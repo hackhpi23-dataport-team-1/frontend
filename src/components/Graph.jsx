@@ -9,6 +9,7 @@ const Graph = ({setVertex}) => {
     const [highlightNodes, setHighlightNodes] = useState(new Set());
     const [highlightLinks, setHighlightLinks] = useState(new Set());
     const [hoverNode, setHoverNode] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     const fgRef = useRef();
 
@@ -38,9 +39,11 @@ const Graph = ({setVertex}) => {
             console.log(graph);
 
             setGraphData(graph);
+            setLoading(false);
     }
 
     useEffect(() => {
+        setLoading(true);
         axios.get('http://127.0.0.1:5000/case/1').then(parseGraph);
     }, []);
 
@@ -71,10 +74,10 @@ const Graph = ({setVertex}) => {
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillStyle = "#000000";
-        ctx.fillText(type, node.x, node.y - node.score / 100 * 8 - 3.5);
+        ctx.fillText(type, node.x, node.y - node.score / 100 * 8 - 4);
 
         ctx.font = `${fontSize}px Sans-Serif`;
-        ctx.fillText(node.id, node.x, node.y - node.score / 100 * 8 - 1);
+        ctx.fillText(node.id, node.x, node.y - node.score / 100 * 8 - 1.5);
 
     }, [hoverNode, highlightNodes]);
 
@@ -116,11 +119,12 @@ const Graph = ({setVertex}) => {
         return color;
     }
 
-    const graphWidth = window.innerWidth - 380;
+    const graphWidth = window.innerWidth - 120;
 
     const onNodeClick = (node) => {
         if (node === hoverNode) {
             setHoverNode(null);
+            setVertex(null);
             setHighlightNodes(new Set());
             setHighlightLinks(new Set());
             return;
@@ -211,6 +215,14 @@ const Graph = ({setVertex}) => {
         return Array.from(highlightLinks.values()).find((l) => l.from === link.from && l.to === link.to);
     }
 
+    if (loading) {
+        return (
+            <div className="loading">
+                <h1>Loading the previous Case...</h1>
+            </div>
+        )
+    }
+
     return (
         <ForceGraph2D 
             ref={fgRef}
@@ -218,8 +230,8 @@ const Graph = ({setVertex}) => {
             linkSource='from'
             linkTarget='to'
             autoPauseRedraw={false}
-            width={graphWidth} 
-            height={600} 
+            width={graphWidth}
+            height={window.innerHeight - 40}
             className="graph"
             nodePointerAreaPaint={nodePaint}
             nodeCanvasObject={(node, ctx) => nodePaint(node, highlightNodes.has((id) => id === node.id) ? "#00ff00" : getColor(node), ctx)}
@@ -232,10 +244,11 @@ const Graph = ({setVertex}) => {
                 setHoverNode(null);
                 setHighlightNodes(new Set());
                 setHighlightLinks(new Set());
+                setVertex(null);
             }}
             linkLabel={(link) => link.kind}
             linkDirectionalArrowLength={4}
-            linkDirectionalArrowRelPos={0.2}
+            linkDirectionalArrowRelPos={0.9}
         />
     );
 }

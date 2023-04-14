@@ -1,14 +1,26 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import Upload from 'rc-upload';
 import axios from 'axios';
 
 const CaseUpload = ({items}) => {
-    const [success, setSuccess] = React.useState(false);
     const [uploadedFiles, setUploadedFiles] = React.useState([]);
+    const [caseId, setCaseId] = React.useState(null);
+
+    const initialMount = React.useRef(true);
+
+    useEffect(() => {
+        if (initialMount.current) {
+            axios.post('http://127.0.0.1:5000/case').then((response) => {
+                console.log('Case ID: ' + response.data.case);
+                setCaseId(response.data.case);
+                initialMount.current = false;
+            });    
+        }
+    }, [])
 
     const getUploadAction = (file) => {
         setUploadedFiles([...uploadedFiles, file.name])
-        return 'http://127.0.0.1:5000/case/1';
+        return `http://127.0.0.1:5000/case/${caseId}`;
     }
 
     const props = {
@@ -18,7 +30,6 @@ const CaseUpload = ({items}) => {
             console.log('onStart', file, file.name);
         },
         onSuccess(response) {
-            setSuccess(true);
             console.log(response);
         },
         onError(err) {
@@ -26,23 +37,46 @@ const CaseUpload = ({items}) => {
         },
     };
 
+    const redirect = (evt) => {
+        window.location.href = `http://127.0.0.1:3001/case/${evt.target.value}`;
+    }
+
+    if (caseId === null) {
+        return (
+            <div className="upload upload--center">
+                <h1 className="upload__title">
+                    Generating Case-ID...
+                </h1>
+            </div>
+        )
+    }
+
     return (
-        <div className="upload">
+        <div className={caseId === null || uploadedFiles.length === 0 ? "upload upload--center" : "upload"}>
             <h1 className="upload__title">
-                Upload Your Malware
+                Upload Your Malicious Files
             </h1>
-            <span>
-                You may upload any type of log data from malicious software runs in your sandbox.
+            <span className='upload__description'>
+                Please upload any log files related to the execution of malicious malware in the field below. You may as well enter the generated case id to resume your data exploration. We take the security and privacy of our systems seriously and are committed to protecting our users from potential threats. Your cooperation in providing us with any relevant information will help us to identify and address any issues promptly. Thank you for your assistance in maintaining a safe and secure environment.<br /><br />
+                <b>Case-ID: </b>{caseId}
             </span>
+
+            <div className='upload__caseid'>
+                <input className='upload__caseid__input' type='text' placeholder='Enter your previous Case-ID' />
+                <input className='upload__caseid__submit' type='submit' value='Resume Analysis' onClick={redirect} />
+            </div>
 
             <Upload {...props}>
                 Drag or Click here to upload your file.
             </Upload>
 
-            <div className='upload__success'>
-                <span className='upload__success__headline'>Uploaded Files</span>
-                {uploadedFiles.map((file) => <div className='upload__success__list__file'>{file}</div>)}
-            </div>
+            {uploadedFiles.length > 0 && (
+                <div className='upload__success'>
+                    <span className='upload__success__headline'>Uploaded Files</span>
+                    {uploadedFiles.map((file) => <div className='upload__success__list__file'>{file}</div>)}
+                    <a className='upload__success__button' href={`case/${caseId}`} >Check My Files</a>
+                </div>
+            )}
         </div>
     );
 }

@@ -1,7 +1,26 @@
 .force-graph-container,
 .scene-container {
     position: absolute !important;
+    top: 20px;
+    left: 100px;
+    right: 20px;
+    bottom: 20px;
+    background-color: $colorBackgroundLight;
+    border: 1px solid $colorBorderDefault;
+    border-radius: 12px;
+}
+
+.loading {
+    position: absolute;
     top: 0;
-    left: $widthDock + $widthList;
+    left: 80px;
     right: 0;
+    bottom: 0;
+    z-index: 200;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: $colorBackgroundLight;
+    border: 1px solid $colorBorderDefault;
+    border-radius: 12px;
 }
