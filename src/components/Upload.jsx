@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import Upload from 'rc-upload';
 import axios from 'axios';
 
-const CaseUpload = ({items}) => {
+const CaseUpload = () => {
     const [uploadedFiles, setUploadedFiles] = React.useState([]);
     const [caseId, setCaseId] = React.useState(null);
 
@@ -11,6 +11,8 @@ const CaseUpload = ({items}) => {
     useEffect(() => {
         if (initialMount.current) {
             axios.post('http://127.0.0.1:5000/case').then((response) => {
+                if (response.status !== 200) return;
+
                 console.log('Case ID: ' + response.data.case);
                 setCaseId(response.data.case);
                 initialMount.current = false;
@@ -38,7 +40,7 @@ const CaseUpload = ({items}) => {
     };
 
     const redirect = (evt) => {
-        window.location.href = `http://127.0.0.1:3001/case/${evt.target.value}`;
+        window.location.href = `http://127.0.0.1:3001/case/${document.querySelector('.upload__caseid__input').value}`;
     }
 
     if (caseId === null) {
@@ -73,7 +75,7 @@ const CaseUpload = ({items}) => {
             {uploadedFiles.length > 0 && (
                 <div className='upload__success'>
                     <span className='upload__success__headline'>Uploaded Files</span>
-                    {uploadedFiles.map((file) => <div className='upload__success__list__file'>{file}</div>)}
+                    {uploadedFiles.map((file, index) => <div key={index} className='upload__success__list__file'>{file}</div>)}
                     <a className='upload__success__button' href={`case/${caseId}`} >Check My Files</a>
                 </div>
             )}

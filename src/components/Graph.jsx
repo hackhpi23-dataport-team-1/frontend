@@ -11,9 +11,12 @@ const Graph = ({setVertex}) => {
     const [hoverNode, setHoverNode] = useState(null);
     const [loading, setLoading] = useState(true);
 
+    const caseId = window.location.pathname.split('/')[2];
     const fgRef = useRef();
 
     const parseGraph = (response) => {
+        console.log(response.data);
+
         const graph = {
                 nodes: response.data.vertices,
                 links: response.data.edges
@@ -44,7 +47,7 @@ const Graph = ({setVertex}) => {
 
     useEffect(() => {
         setLoading(true);
-        axios.get('http://127.0.0.1:5000/case/1').then(parseGraph);
+        axios.get(`http://127.0.0.1:5000/case/${caseId}`).then(parseGraph);
     }, []);
 
     const nodePaint = useCallback((node, color, ctx) => {
@@ -218,7 +221,7 @@ const Graph = ({setVertex}) => {
     if (loading) {
         return (
             <div className="loading">
-                <h1>Loading the previous Case...</h1>
+                <h1>Extracting valuable information...</h1>
             </div>
         )
     }
