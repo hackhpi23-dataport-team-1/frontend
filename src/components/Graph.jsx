@@ -9,12 +9,13 @@ const mapping = {
     'asn': 'asn',
     'domain': 'name',
     'has_asn': 'asn',
-    "process": "process",
+    "process": "Image",
     "Dummy" : "Dummy",
-    "file" : "file",
+    "file" : "TargetFilename",
     "dns" : "dns",
     'NetworkConnect': 'process',
     'create': 'level',
+    'key': 'TargetObject',
 };
 
 const Graph = ({setVertex}) => {
@@ -87,7 +88,12 @@ const Graph = ({setVertex}) => {
     }, []);
 
     const getLabel = (node) => {
-        return node.attr[mapping[node.kind]] || node.id;
+        const attr = node.attr[mapping[node.kind]] || node.id;
+        if (attr.length > 15) {
+            return "..." + attr.substring(attr.length - 15, attr.length - 1);
+        }
+
+        return attr;
     }
 
     const nodePaint = useCallback((node, color, ctx) => {
@@ -278,9 +284,9 @@ const Graph = ({setVertex}) => {
             nodePointerAreaPaint={nodePaint}
             nodeCanvasObject={(node, ctx) => nodePaint(node, highlightNodes.has((id) => id === node.id) ? "#00ff00" : getColor(node), ctx)}
             onNodeClick={onNodeClick}
-            linkWidth={link => findLink(link) ? 5 : 1}
+            linkWidth={link => findLink(link) ? 3 : 1}
             linkDirectionalParticles={4}
-            linkDirectionalParticleWidth={link => findLink(link) ? 4 : 0}
+            linkDirectionalParticleWidth={link => findLink(link) ? 2 : 0}
             cooldownTime={0}
             onNodeRightClick={() => {
                 setHoverNode(null);

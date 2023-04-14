@@ -5,6 +5,7 @@ import axios from 'axios';
 const CaseUpload = () => {
     const [uploadedFiles, setUploadedFiles] = React.useState([]);
     const [caseId, setCaseId] = React.useState(null);
+    const [progress, setProgress] = React.useState(null);
 
     const initialMount = React.useRef(true);
 
@@ -37,6 +38,10 @@ const CaseUpload = () => {
         onError(err) {
             console.log('onError', err);
         },
+        onProgress(step, file) {
+            setProgress(step.percent);
+            console.log('onProgress', Math.round(step.percent), file.name);
+        }
     };
 
     const redirect = (evt) => {
@@ -74,7 +79,7 @@ const CaseUpload = () => {
 
             {uploadedFiles.length > 0 && (
                 <div className='upload__success'>
-                    <span className='upload__success__headline'>Uploaded Files</span>
+                    <span className='upload__success__headline'>Uploaded Files ({Math.round(progress,2)} %)</span>
                     {uploadedFiles.map((file, index) => <div key={index} className='upload__success__list__file'>{file}</div>)}
                     <a className='upload__success__button' href={`case/${caseId}`} >Check My Files</a>
                 </div>
