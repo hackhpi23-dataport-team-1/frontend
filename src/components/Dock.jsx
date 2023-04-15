@@ -1,6 +1,5 @@
 import React from 'react';
 import hackathon_logo from '../images/hackhpi_logo.jpeg';
-import icon_close from '../images/iconmonstr-plus-square-lined.svg';
 import { Link } from 'react-router-dom';
 
 const Dock = () => {

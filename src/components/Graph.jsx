@@ -85,7 +85,7 @@ const Graph = ({setVertex}) => {
         setLoading(true);
         console.log("Fetching graph data...");
         axios.get(`http://127.0.0.1:5000/case/${caseId}`).then(parseGraph);
-    }, []);
+    }, [caseId]);
 
     const getLabel = (node) => {
         const attr = node.attr[mapping[node.kind]] || node.id;
@@ -197,66 +197,10 @@ const Graph = ({setVertex}) => {
             }));
         }
 
-        const distance = 40;
-        const distRatio = 1 + distance/Math.hypot(node.x, node.y, node.z);
-
         setHighlightNodes(highlightedNodes);
         setHighlightLinks(highlightedLinks);
         setHoverNode(node || null);
     };
-
-    const linkPaint = (link, ctx) => {
-        const LABEL_NODE_MARGIN = 1 * 1.5;
-
-        const start = link.source;
-        const end = link.target;
-
-        // ignore unbound links
-        if (typeof start !== 'object' || typeof end !== 'object') return;
-
-        // calculate label positioning
-        const textPos = Object.assign(...['x', 'y'].map(c => ({
-            [c]: start[c] + (end[c] - start[c]) / 2 // calc middle point
-        })));
-
-        const relLink = { x: end.x - start.x, y: end.y - start.y };
-
-        const maxTextLength = Math.sqrt(Math.pow(relLink.x, 2) + Math.pow(relLink.y, 2)) - LABEL_NODE_MARGIN * 2;
-
-        let textAngle = Math.atan2(relLink.y, relLink.x);
-        // maintain label vertical orientation for legibility
-        if (textAngle > Math.PI / 2) textAngle = -(Math.PI - textAngle);
-        if (textAngle < -Math.PI / 2) textAngle = -(-Math.PI - textAngle);
-
-        const label = link.kind;
-
-        // estimate fontSize to fit in link length
-        ctx.font = '1px Sans-Serif';
-        const fontSize = 1.4;
-        ctx.font = `${fontSize}px Sans-Serif`;
-        const textWidth = ctx.measureText(label).width;
-        const bckgDimensions = [textWidth, fontSize].map(n => n + fontSize * 0.2); // some padding
-
-        // draw text label (with background rect)
-        ctx.save();
-        ctx.translate(textPos.x, textPos.y);
-        ctx.rotate(textAngle);
-
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
-        ctx.fillRect(link.source.vx, link.source.vy, link.target.x - link.source.x, 0.1);
-
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
-        ctx.fillRect(link.x, link.y, 1, 1);
-
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-        ctx.fillRect(- bckgDimensions[0] / 2, - bckgDimensions[1] / 2, ...bckgDimensions);
-
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillStyle = 'darkgrey';
-        ctx.fillText(label, 0, 0);
-        ctx.restore();
-    }
 
     const findLink = (link) => {
         if (highlightLinks.size === 0) return false;

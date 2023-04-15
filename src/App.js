@@ -1,7 +1,6 @@
 import './sass/index.scss';
 import { useState } from 'react';
 import Dock from './components/Dock';
-import List from './components/List';
 import Info from './components/Info';
 import Graph from './components/Graph';
 import CaseUpload from './components/Upload';
