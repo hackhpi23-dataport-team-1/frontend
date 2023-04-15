@@ -90,7 +90,7 @@ const Graph = ({setVertex}) => {
     const getLabel = (node) => {
         const attr = node.attr[mapping[node.kind]] || node.id;
         if (attr.length > 15) {
-            return "..." + attr.substring(attr.length - 15, attr.length - 1);
+            return "..." + attr.substring(attr.length - 15, attr.length);
         }
 
         return attr;
